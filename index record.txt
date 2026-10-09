@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบบันทึกข้อมูลรับย้ายผู้ป่วยออโธ</title>
+  <!-- Google Fonts: Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #f4f6f4;
+      --card-bg: #ffffff;
+      --primary-green: #3a6351;
+      --accent-green: #4e8d7c;
+      --light-cream: #fbf9f1;
+      --border-color: #e2e8e4;
+      --text-dark: #2c3e35;
+      --text-muted: #6c7a72;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Kanit', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* Counter Card - แสดงจำนวนครั้งการลงทะเบียน */
+    .counter-card {
+      background: linear-gradient(135deg, #e8efe9 0%, var(--light-cream) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .counter-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .counter-number {
+      font-size: 42px;
+      font-weight: 600;
+      color: var(--primary-green);
+      line-height: 1;
+    }
+
+    .counter-unit {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Main Form Card */
+    .form-card {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+      border: 1px solid #ebf0ec;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary-green);
+      margin-bottom: 20px;
+      text-align: center;
+      letter-spacing: -0.2px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-dark);
+      background-color: #fafbfc;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus {
+      border-color: var(--accent-green);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(78, 141, 124, 0.12);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background-color: var(--primary-green);
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      background-color: #2e5142;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    .btn-submit:disabled {
+      background-color: #a3b8ad;
+      cursor: not-allowed;
+    }
+
+    /* Notification Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+      text-align: center;
+    }
+
+    .alert-success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+
+    .alert-error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    @media (max-width: 520px) {
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- บล็อกแสดงจำนวนครั้งการลงทะเบียนทั้งหมด -->
+  <div class="counter-card">
+    <div class="counter-title">จำนวนครั้งการลงทะเบียนทั้งหมด</div>
+    <div class="counter-number" id="totalRecords">-</div>
+    <div class="counter-unit">รายการ</div>
+  </div>
+
+  <!-- ฟอร์มลงทะเบียน -->
+  <div class="form-card">
+    <div class="header-title">บันทึกข้อมูลรับย้ายผู้ป่วยออโธ</div>
+    
+    <form id="transferForm">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dateRequest">วันที่ขอย้าย *</label>
+          <input type="date" id="dateRequest" required>
+        </div>
+        <div class="form-group">
+          <label for="dateReceive">วันที่รับย้าย *</label>
+          <input type="date" id="dateReceive" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="hn">HN *</label>
+          <input type="text" id="hn" placeholder="เช่น 66XXXXX" required>
+        </div>
+        <div class="form-group">
+          <label for="name">ชื่อ-สกุล *</label>
+          <input type="text" id="name" placeholder="ชื่อ-นามสกุล ผู้ป่วย" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="diagnosis">Diagnosis *</label>
+        <input type="text" id="diagnosis" placeholder="ระบุ การวินิจฉัยโรค" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="doctor">อาจารย์ *</label>
+          <input type="text" id="doctor" placeholder="ชื่ออาจารย์แพทย์" required>
+        </div>
+        <div class="form-group">
+          <label for="ward">หอผู้ป่วยที่รับย้าย *</label>
+          <input type="text" id="ward" placeholder="ระบุ หอผู้ป่วย" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">ลงทะเบียนรับย้าย</button>
+    </form>
+
+    <div id="alertBox" class="alert"></div>
+  </div>
+
+</div>
+
+<script>
+  // โหลดจำนวนครั้งการลงทะเบียนเมื่อเปิดหน้าเว็บ
+  window.addEventListener('DOMContentLoaded', () => {
+    // กำหนดวันที่ปัจจุบันเป็นค่าเริ่มต้นในช่อง Date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateRequest').value = today;
+    document.getElementById('dateReceive').value = today;
+
+    // ดึงจำนวนรายการทั้งหมด
+    google.script.run
+      .withSuccessHandler(updateCounter)
+      .getTotalRecordsCount();
+  });
+
+  function updateCounter(count) {
+    document.getElementById('totalRecords').innerText = count;
+  }
+
+  // ส่งข้อมูลฟอร์ม
+  document.getElementById('transferForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    const alertBox = document.getElementById('alertBox');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'กำลังบันทึกข้อมูล...';
+    alertBox.style.display = 'none';
+
+    const formData = {
+      dateRequest: document.getElementById('dateRequest').value,
+      dateReceive: document.getElementById('dateReceive').value,
+      hn: document.getElementById('hn').value.trim(),
+      name: document.getElementById('name').value.trim(),
+      diagnosis: document.getElementById('diagnosis').value.trim(),
+      doctor: document.getElementById('doctor').value.trim(),
+      ward: document.getElementById('ward').value.trim()
+    };
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'ลงทะเบียนรับย้าย';
+
+        if (response.status === 'success') {
+          showAlert(response.message, 'success');
+          // อัปเดตตัวเลขจำนวนการลงทะเบียน
+          updateCounter(response.totalRecords);
+          
+          // ล้างข้อมูลในฟอร์ม (คงวันที่ไว้)
+          document.getElementById('hn').value = '';
+          document.getElementById('name').value = '';
+          document.getElementById('diagnosis').value = '';
+          document.getElementById('doctor').value = '';
+          document.getElementById('ward').value = '';
+        } else {
+          showAlert('เกิดข้อผิดพลาด: ' + response.message, 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'ลงทะเบียนรับย้าย';
+        showAlert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err, 'error');
+      })
+      .savePatientData(formData);
+  });
+
+  function showAlert(message, type) {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.innerText = message;
+    alertBox.className = 'alert alert-' + type;
+    alertBox.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
